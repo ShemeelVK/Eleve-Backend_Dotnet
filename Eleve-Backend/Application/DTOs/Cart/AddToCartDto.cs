@@ -1,4 +1,4 @@
-﻿namespace Eleve_Backend.Application.DTOs
+﻿namespace Eleve_Backend.Application.DTOs.Cart
 {
     public class AddToCartDto
     {

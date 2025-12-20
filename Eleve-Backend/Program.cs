@@ -1,7 +1,9 @@
+using AutoMapper;
 using Eleve_Backend.Application.Interfaces;
-using Eleve_Backend.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using Eleve_Backend.Infrastructure.Persistence;
+using Eleve_Backend.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -22,25 +24,28 @@ namespace Eleve_Backend
             builder.Services.AddDbContext<EleveDbContext> (options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            //automapper
+            builder.Services.AddAutoMapper(typeof(Program));
+
             //Auth service
-            builder.Services.AddScoped<IAuthService, JwtAuthService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IWishlistService, WishlistService>();
 
             //configuring jwt authentication
             // This tells the app: "If someone sends a token, here is how you check if it's valid"
 
-            var jwtKey = builder.Configuration["Jwt:Key"];
-            var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-            var jwtAudience = builder.Configuration["Jwt:Audience"];
+            var jwtKey = builder.Configuration["JwtSettings:Key"];
+            var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+            var jwtAudience = builder.Configuration["JwtSettings:Audience"];
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = true,
-                        ValidateActor = true,
+                        ValidateIssuer = true,  
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtIssuer,

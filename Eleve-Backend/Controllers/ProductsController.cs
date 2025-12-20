@@ -1,4 +1,6 @@
-﻿using Eleve_Backend.Application.Interfaces;
+﻿using AutoMapper;
+using Eleve_Backend.Application.DTOs.Products;
+using Eleve_Backend.Application.Interfaces;
 using Eleve_Backend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,12 @@ namespace Eleve_Backend.Controllers
     {
 
         private readonly IProductService _productService;
+        private readonly IMapper _mapper;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService,IMapper mapper)
         {
             _productService = productService;
+            _mapper = mapper;
         }
 
 
@@ -26,7 +30,7 @@ namespace Eleve_Backend.Controllers
         }
 
 
-        [HttpGet("Get Product By Id {id}")]
+        [HttpGet("Get Product By Id")]
         public IActionResult GetById(int id)
         {
             var product = _productService.GetProductById(id);
@@ -35,15 +39,70 @@ namespace Eleve_Backend.Controllers
             return Ok(product);
         }
 
+        [HttpGet("Get Product By Category")]
+        public IActionResult GetByCategory(string category)
+        {
+            var products=_productService.GetProductsByCategory(category);
+            return Ok(products);
+        }
+
         [Authorize]
         [HttpPost("Add Product")]
-        public IActionResult Create([FromBody] Product product)
+        public IActionResult Create([FromForm] CreateProductDto request)
         {
-            product.Id = 0; //for generating a new id for sql with the identity
+            try
+            {
+                var productEntity = _mapper.Map<Product>(request);
 
-            var createdProduct = _productService.AddProduct(product);
+                var createdProduct = _productService.AddProduct(productEntity);
+                return Ok(createdProduct);
+            }
+            catch(InvalidOperationException ex)
+            {
+                //logic for already exists
+                return Conflict(new { message = ex.Message   });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new {error= ex.Message });
+            }
+            //product.Id = 0; //for generating a new id for sql with the identity
 
-            return Ok(createdProduct);
+
+
+        }
+
+        [Authorize]
+        [HttpPut("Update Product")]
+        public IActionResult Update(int id, [FromForm] CreateProductDto request)
+        {
+            //using automapper to convert DTO -> Entity
+            var productEntity = _mapper.Map<Product>(request);
+
+            //ensuring the id is correct before saving
+            productEntity.Id = id;
+
+            //service
+            var existing = _productService.GetProductById(id);
+            if (existing == null)
+                return NotFound("Product not found");
+
+            _productService.UpdateProduct(id, productEntity);
+
+            return Ok("Product updated successfully");
+        }
+
+        [Authorize]
+        [HttpDelete("Delete Product")]
+        public IActionResult Delete(int id)
+        {
+            var existing=_productService.GetProductById(id);
+
+            if (existing == null)
+                return NotFound("Product Not found");
+
+            _productService.DeleteProduct(id);
+            return Ok("Product Deleted");
         }
     }
 }

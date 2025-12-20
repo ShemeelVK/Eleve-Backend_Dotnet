@@ -1,4 +1,5 @@
-﻿using Eleve_Backend.Domain.Entities;
+﻿using Eleve_Backend.Application.DTOs.Products;
+using Eleve_Backend.Domain.Entities;
 
 namespace Eleve_Backend.Application.Interfaces
 {
@@ -7,5 +8,9 @@ namespace Eleve_Backend.Application.Interfaces
         List<Product> GetAllProducts();
         Product? GetProductById(int id);
         Product AddProduct(Product product);
+
+        void UpdateProduct(int id, Product product);
+        void DeleteProduct(int id);
+        List<ProductDto> GetProductsByCategory(string category);
     }
 }

@@ -11,6 +11,10 @@ namespace Eleve_Backend.Application.Interfaces
         void AddToCart(int userId, int productId, int quantity);
 
         //remove item
-        void RemoveFromCart(int userId, int cartItemId);
+        void RemoveFromCart(int userId, int productId);
+
+        void ClearCart(int useraId);
+
+        void UpdateQuantity(int userId, int productId, int newQuantity);
     }
 }

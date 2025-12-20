@@ -1,4 +1,4 @@
-﻿using Eleve_Backend.Application.DTOs;
+﻿using Eleve_Backend.Application.DTOs.Auth;
 using Eleve_Backend.Domain.Entities;
 
 namespace Eleve_Backend.Application.Interfaces
@@ -7,7 +7,7 @@ namespace Eleve_Backend.Application.Interfaces
     public interface IAuthService
     {
         //this returns a string (the token) if successful,oir null if failed
-        string? Login(LoginRequestDto request);
-        User Register(RegisterRequestDto request);
+        Task<String> Login(LoginRequestDto request);
+        Task<String> Register(RegisterRequestDto request);
     }
 }

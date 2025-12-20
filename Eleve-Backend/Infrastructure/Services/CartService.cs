@@ -1,9 +1,10 @@
 ﻿using Eleve_Backend.Domain.Entities;
 using Eleve_Backend.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Eleve_Backend.Infrastructure.Persistence;
 
 
-namespace Eleve_Backend.Infrastructure
+namespace Eleve_Backend.Infrastructure.Services
 {
     public class CartService : ICartService
     {
@@ -50,15 +51,40 @@ namespace Eleve_Backend.Infrastructure
             _context.SaveChanges();
         }
 
-        public void RemoveFromCart(int userId,int cartItemId)
+        public void RemoveFromCart(int userId,int productId)
         {
-            var item = _context.CartItems.FirstOrDefault(s => s.Id == cartItemId && s.UserId == userId);
+            var item = _context.CartItems.FirstOrDefault(s => s.UserId == userId&& s.ProductId == productId);
 
             if (item != null)
             {
                 _context.CartItems.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        public void ClearCart(int userId)
+        {
+            var items = _context.CartItems.Where(c => c.UserId == userId);
+            _context.CartItems.RemoveRange(items);
+            _context.SaveChanges();
+        }
+
+        public void UpdateQuantity(int userId,int productId,int newQuantity)
+        {
+            var item = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.ProductId == productId);
+
+            if (item != null)
+            {
+                if(newQuantity > 0)
+                {
+                    item.Quantity = newQuantity;
+                }
+                else
+                {
+                    _context.CartItems.Remove(item);
+                }
+            }
+            _context.SaveChanges();
         }
     }
 }

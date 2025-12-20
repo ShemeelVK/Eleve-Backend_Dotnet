@@ -1,4 +1,4 @@
-﻿using Eleve_Backend.Application.DTOs;
+﻿using Eleve_Backend.Application.DTOs.Auth;
 using Eleve_Backend.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 namespace Eleve_Backend.Controllers
@@ -15,26 +15,32 @@ namespace Eleve_Backend.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequestDto request)
+        public async Task<IActionResult> Login([FromForm] LoginRequestDto request)
         {
-            var token=_authService.Login(request);
-
-            if (token == null)
-                return Unauthorized("Invalid Credentials");
-
-            return Ok(new { Token = token });
+            try
+            {
+                var token = await _authService.Login(request);
+                return Ok(new { token = token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
         }
 
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterRequestDto request)
-        {
-            var user=_authService.Register(request);
 
-            if (user == null)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromForm] RegisterRequestDto request)
+        {
+            try
             {
-                return BadRequest("User already exists");
+                var result = await _authService.Register(request);
+                return Ok(new { message = result });
             }
-            return Ok(new { message = "User registered successfully", userId = user.Id });
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using Eleve_Backend.Application.DTOs;
-using Eleve_Backend.Application.Interfaces;
+﻿using Eleve_Backend.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 using Microsoft.AspNetCore.Mvc;
+using Eleve_Backend.Application.DTOs.Cart;
 
 namespace Eleve_Backend.Controllers
 {
@@ -39,11 +39,20 @@ namespace Eleve_Backend.Controllers
 
         //adding items to cart
         [HttpPost("Add To Cart")]
-        public IActionResult AddToCart([FromBody] AddToCartDto request)
+        public IActionResult AddToCart([FromForm] AddToCartDto request)
         {
             var userId=GetUserId() ;
             _cartService.AddToCart(userId, request.ProductId, request.Quantity);
             return Ok("Item added to cart");
+        }
+
+        //updating cart(quantity)
+        [HttpPut("Product Quantity")]
+        public IActionResult UpdateQuantity(int itemId, [FromBody] UpdateCartDto request)
+        {
+            var userId = GetUserId();
+            _cartService.UpdateQuantity(userId, itemId, request.NewQuantity);
+            return Ok("Cart quantity updated");
         }
 
         //removing from cart
@@ -53,6 +62,15 @@ namespace Eleve_Backend.Controllers
             var userId=GetUserId();
             _cartService.RemoveFromCart(userId, itemId);
             return Ok("Item removed");
+        }
+
+        //clearing cart
+        [HttpDelete("Clear Cart")]
+        public IActionResult ClearCart()
+        {
+            var userId = GetUserId();
+            _cartService.ClearCart(userId);
+            return Ok("Cart Cleared");
         }
 
     }

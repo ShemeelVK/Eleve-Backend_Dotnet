@@ -1,7 +1,7 @@
 ﻿using Eleve_Backend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Eleve_Backend.Infrastructure
+namespace Eleve_Backend.Infrastructure.Persistence
 {
     public class EleveDbContext : DbContext
     {
