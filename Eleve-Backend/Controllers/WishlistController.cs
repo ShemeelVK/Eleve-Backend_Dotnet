@@ -8,6 +8,8 @@ using Eleve_Backend.Application.DTOs.Wishlist;
 
 namespace Eleve_Backend.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService _wishlistService;

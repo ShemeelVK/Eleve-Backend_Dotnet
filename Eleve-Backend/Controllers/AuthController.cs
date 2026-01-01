@@ -15,12 +15,12 @@ namespace Eleve_Backend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] LoginRequestDto request)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             try
             {
-                var token = await _authService.Login(request);
-                return Ok(new { token = token });
+                var result = await _authService.Login(request);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -30,7 +30,7 @@ namespace Eleve_Backend.Controllers
 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromForm] RegisterRequestDto request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             try
             {

@@ -35,6 +35,15 @@ namespace Eleve_Backend.Infrastructure.Services
 
         public string ToggleWishlist(int userId,int productId)
         {
+            var product = _context.Products.Find(productId);
+
+            if (product == null)
+                throw new KeyNotFoundException("Product Not Found");
+
+            if (product.Stock <= 0)
+                throw new InvalidOperationException("Cannot add out-of-stock item to wishlist");
+
+
             var item = _context.WishItems
                 .FirstOrDefault(x => x.UserId == userId && x.ProductId == productId);
 
@@ -42,7 +51,7 @@ namespace Eleve_Backend.Infrastructure.Services
             {
                 _context.WishItems.Remove(item);
                 _context.SaveChanges();
-                return "Removed";
+                return "Removed from wishlist";
             }
             else
             {

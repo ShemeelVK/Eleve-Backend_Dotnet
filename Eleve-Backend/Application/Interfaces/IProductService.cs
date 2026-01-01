@@ -5,8 +5,10 @@ namespace Eleve_Backend.Application.Interfaces
 {
     public interface IProductService
     {
-        List<Product> GetAllProducts();
+        List<ProductDto> GetAllProducts();
         Product? GetProductById(int id);
+
+        List<ProductDto> GetFeaturedProduct();
         Product AddProduct(Product product);
 
         void UpdateProduct(int id, Product product);

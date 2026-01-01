@@ -7,7 +7,7 @@ namespace Eleve_Backend.Application.Interfaces
     public interface IAuthService
     {
         //this returns a string (the token) if successful,oir null if failed
-        Task<String> Login(LoginRequestDto request);
+        Task<LoginResponseDto> Login(LoginRequestDto request);
         Task<String> Register(RegisterRequestDto request);
     }
 }

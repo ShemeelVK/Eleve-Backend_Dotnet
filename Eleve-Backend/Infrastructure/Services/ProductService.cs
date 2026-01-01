@@ -15,9 +15,40 @@ namespace Eleve_Backend.Infrastructure.Services
             _context = context;
         }
 
-        public List<Product> GetAllProducts()
+        public List<ProductDto> GetAllProducts()
         {
-            return _context.Products.ToList();
+            return _context.Products
+                .Where(p=> !p.IsDeleted)
+                .Select(p => new ProductDto
+                {
+                    Id=p.Id,
+                    Name=p.Name,
+                    Description=p.Description,
+                    Price=p.Price,
+                    Category=p.Category,
+                    ImageUrl=p.ImageUrl,
+                    IsFeatured=p.IsFeatured,
+                    Stock=p.Stock
+                })
+                .ToList();
+        }
+
+        public List<ProductDto> GetFeaturedProduct()
+        {
+            return _context.Products
+                .Where(p => p.IsFeatured == true)
+                .Select(s=>new ProductDto
+                {
+                    Id=s.Id,
+                    Name=s.Name,
+                    Description=s.Description,
+                    Price=s.Price,
+                    Category=s.Category,
+                    ImageUrl=s.ImageUrl,
+                    IsFeatured=s.IsFeatured,
+                    Stock=s.Stock
+                })
+                .ToList();
         }
 
         public Product? GetProductById(int id)
@@ -27,11 +58,11 @@ namespace Eleve_Backend.Infrastructure.Services
 
         public Product AddProduct(Product product)
         {
-            bool exists = _context.Products.Any(u => u.Id == product.Id);
+            bool exists = _context.Products.Any(u => u.Name.ToLower() == product.Name.ToLower());
 
             if (exists)
             {
-                throw new InvalidOperationException($"A product with ID {product.Id} already exists");
+                throw new InvalidOperationException($"A product with {product.Name} already exists");
             }
 
             // Adding the product to the DbContext
@@ -62,15 +93,16 @@ namespace Eleve_Backend.Infrastructure.Services
             var product=_context.Products.Find(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                product.IsDeleted = true;
                 _context.SaveChanges();
             }
         }
 
         public List<ProductDto> GetProductsByCategory(string category)
         {
-            return _context.Products
+            var products= _context.Products
                 .Where(p => p.Category.ToLower() == category.ToLower())
+                .Where(p=> !p.IsDeleted)
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
@@ -79,9 +111,12 @@ namespace Eleve_Backend.Infrastructure.Services
                     Category = p.Category,
                     Description = p.Description,
                     ImageUrl = p.ImageUrl,
-                    IsFeatured = p.IsFeatured
+                    IsFeatured = p.IsFeatured,
+                    Stock=p.Stock
                 })
                 .ToList();
+
+            return products;
         }
     }
 }

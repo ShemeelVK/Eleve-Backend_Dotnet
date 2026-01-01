@@ -1,12 +1,35 @@
-﻿namespace Eleve_Backend.Application.DTOs.Products
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Eleve_Backend.Application.DTOs.Products
 {
     public class CreateProductDto
     {
+        [Required]
+        [StringLength(100,MinimumLength =3)]
+        [RegularExpression(@"^(?!\s)(?!.*\s$).+$", ErrorMessage = "Name cannot have leading or trailing spaces.")]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(300,MinimumLength =3)]
         public string Description { get; set; } = string.Empty;
+
+        [Required]
+        [Range(0.01,100000, ErrorMessage ="Price must be greater than 0")]
         public decimal Price { get; set; }
+        
+
+        [Required]
+        [Url(ErrorMessage ="Invalid Image URL")]
         public string ImageUrl { get; set; } = string.Empty;
+
+        [Required]
+        [Range(1, 100000, ErrorMessage = "Stock must be at least 1")]
         public int Stock { get; set; }
+
+        [Required]
+        [RegularExpression(@"^[a-zA-Z\s]*$", ErrorMessage = "Category can only contain letters.")]
         public string Category { get; set; } = string.Empty;
+
+        public bool IsFeatured { get; set; }
     }
 }

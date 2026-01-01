@@ -23,14 +23,20 @@ namespace Eleve_Backend.Controllers
 
 
         //[Authorize(Roles ="User")]
-        [HttpGet("Get All Product")]
+        [HttpGet("Get-All-Product")]
         public IActionResult GetAll()
         {
             return Ok(_productService.GetAllProducts());
         }
 
+        [HttpGet("Featured-Products")]
+        public IActionResult GetFeaturedProducts()
+        {
+            var products = _productService.GetFeaturedProduct();
+            return Ok(products);
+        }
 
-        [HttpGet("Get Product By Id")]
+        [HttpGet("Product-By-Id")]
         public IActionResult GetById(int id)
         {
             var product = _productService.GetProductById(id);
@@ -39,7 +45,7 @@ namespace Eleve_Backend.Controllers
             return Ok(product);
         }
 
-        [HttpGet("Get Product By Category")]
+        [HttpGet("Product-By-Category")]
         public IActionResult GetByCategory(string category)
         {
             var products=_productService.GetProductsByCategory(category);
@@ -47,8 +53,8 @@ namespace Eleve_Backend.Controllers
         }
 
         [Authorize]
-        [HttpPost("Add Product")]
-        public IActionResult Create([FromForm] CreateProductDto request)
+        [HttpPost("Add-Product")]
+        public IActionResult Create([FromBody] CreateProductDto request)
         {
             try
             {
@@ -73,7 +79,7 @@ namespace Eleve_Backend.Controllers
         }
 
         [Authorize]
-        [HttpPut("Update Product")]
+        [HttpPut("Update-Product")]
         public IActionResult Update(int id, [FromForm] CreateProductDto request)
         {
             //using automapper to convert DTO -> Entity
@@ -93,7 +99,7 @@ namespace Eleve_Backend.Controllers
         }
 
         [Authorize]
-        [HttpDelete("Delete Product")]
+        [HttpDelete("Delete-Product")]
         public IActionResult Delete(int id)
         {
             var existing=_productService.GetProductById(id);

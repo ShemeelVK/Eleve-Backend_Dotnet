@@ -33,17 +33,32 @@ namespace Eleve_Backend.Controllers
         public IActionResult GetCartItems()
         {
             var userId=GetUserId();
-            var items = _cartService.GetCart(userId);
-            return Ok(items);
+            List<CartItemDto> cart = _cartService.GetCart(userId);
+            return Ok(cart);
         }
 
         //adding items to cart
         [HttpPost("Add To Cart")]
         public IActionResult AddToCart([FromForm] AddToCartDto request)
         {
-            var userId=GetUserId() ;
-            _cartService.AddToCart(userId, request.ProductId, request.Quantity);
-            return Ok("Item added to cart");
+            try
+            {
+                var userId=GetUserId() ;
+                _cartService.AddToCart(userId, request.ProductId, request.Quantity);
+                return Ok("Item added to cart");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An internal error occured" });
+            }
         }
 
         //updating cart(quantity)
@@ -59,9 +74,16 @@ namespace Eleve_Backend.Controllers
         [HttpDelete("Remove from Cart")]
         public IActionResult RemoveFromCart(int itemId)
         {
-            var userId=GetUserId();
-            _cartService.RemoveFromCart(userId, itemId);
-            return Ok("Item removed");
+            try
+            {
+                var userId=GetUserId();
+                _cartService.RemoveFromCart(userId, itemId);
+                return Ok("Item removed");
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
         }
 
         //clearing cart

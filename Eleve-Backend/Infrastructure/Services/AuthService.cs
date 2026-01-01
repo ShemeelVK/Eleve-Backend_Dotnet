@@ -49,7 +49,7 @@ namespace Eleve_Backend.Infrastructure.Services
             return "Registered successfully";
         }
 
-        public async Task<String> Login(LoginRequestDto request)
+        public async Task<LoginResponseDto> Login(LoginRequestDto request)
         {
             //find the user using email
             var user = await _context.Users.FirstOrDefaultAsync(u=> u.Email==request.Email);
@@ -66,7 +66,19 @@ namespace Eleve_Backend.Infrastructure.Services
             if (!isPasswordValid)
                 throw new Exception("Invalid email or password");
 
-            return GenerateJwtToken(user);
+            var token= GenerateJwtToken(user);
+
+            return new LoginResponseDto
+            {
+                Token = token,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    Name = user.Username,
+                    Email = user.Email,
+                    Role = user.Role
+                }
+            };
         }
 
         private string GenerateJwtToken(User user)

@@ -32,6 +32,7 @@ namespace Eleve_Backend
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
 
             //configuring jwt authentication
             // This tells the app: "If someone sends a token, here is how you check if it's valid"
@@ -88,7 +89,17 @@ namespace Eleve_Backend
                 });
             });
 
-                var app = builder.Build();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp",
+                    builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+                    //.AllowCredentials());
+            });
+
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -99,9 +110,22 @@ namespace Eleve_Backend
 
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AllowReactApp");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
+            //global exception handler
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred. Please try again later.\"}");
+                });
+            });
 
             app.MapControllers();
 
