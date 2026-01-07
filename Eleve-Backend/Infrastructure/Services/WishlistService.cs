@@ -27,6 +27,9 @@ namespace Eleve_Backend.Infrastructure.Services
                     ProductId = w.ProductId,
                     ProductName = w.Product.Name,
                     Price = w.Product.Price,
+                    Category= w.Product.Category,
+                    Description= w.Product.Description,
+                    Stock = w.Product.Stock,
                     ImageUrl = w.Product.ImageUrl,
                     IsFeatured=w.Product.IsFeatured
                 })

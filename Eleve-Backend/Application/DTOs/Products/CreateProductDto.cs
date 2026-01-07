@@ -4,9 +4,10 @@ namespace Eleve_Backend.Application.DTOs.Products
 {
     public class CreateProductDto
     {
-        [Required]
+        [Required(ErrorMessage ="Product Name is required")]
         [StringLength(100,MinimumLength =3)]
-        [RegularExpression(@"^(?!\s)(?!.*\s$).+$", ErrorMessage = "Name cannot have leading or trailing spaces.")]
+        [RegularExpression(@"^(?!\s)(?!\.)[a-zA-Z0-9\s.]+(?<!\s)(?<!\.)$",
+         ErrorMessage = "Name cannot start/end with spaces or dots, and must only contain letters, numbers, and spaces.")]
         public string Name { get; set; } = string.Empty;
 
         [Required]

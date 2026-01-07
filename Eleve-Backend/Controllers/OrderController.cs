@@ -20,7 +20,7 @@ namespace Eleve_Backend.Controllers
             _orderService = orderService;
         }
 
-        [HttpPost]
+        [HttpPost("Place-Order")]
         [Authorize]
         public async Task<IActionResult> PlaceOrderAsync([FromBody] CreateOrderDto dto)
         {
@@ -31,9 +31,9 @@ namespace Eleve_Backend.Controllers
 
             int userId=int.Parse(userIdClaim);
 
-            var orderId=await _orderService.PlaceOrderAsync(userId, dto);
+            var orderReference=await _orderService.PlaceOrderAsync(userId, dto);
 
-            return Ok(new { OrderId = orderId, Message = "Order placed Successfully" });
+            return Ok(new { Order = orderReference, Message = "Order placed Successfully" });
         }
 
         [HttpPut("{id}/Order-Status")]
@@ -55,7 +55,9 @@ namespace Eleve_Backend.Controllers
             //extracting user id from token
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
 
-            if(string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+            if(string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
             int userId= int.Parse(userIdClaim);
 
             //get the data
@@ -63,7 +65,7 @@ namespace Eleve_Backend.Controllers
             return Ok(orders);
         }
 
-        [HttpPut("Cancel-Order")]
+        [HttpPut("Cancel-Order/{id}")]
         [Authorize]
         public async Task<IActionResult> CancelOrderAsync(Guid id)
         {

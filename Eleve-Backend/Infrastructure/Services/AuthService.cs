@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Eleve_Backend.Infrastructure.Services
@@ -67,10 +68,16 @@ namespace Eleve_Backend.Infrastructure.Services
                 throw new Exception("Invalid email or password");
 
             var token= GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            await _context.SaveChangesAsync();
 
             return new LoginResponseDto
             {
                 Token = token,
+                RefreshToken=refreshToken,
                 User = new UserDto
                 {
                     Id = user.Id,
@@ -105,6 +112,17 @@ namespace Eleve_Backend.Infrastructure.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
         }
     }
 }

@@ -28,22 +28,28 @@ namespace Eleve_Backend.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<Guid> PlaceOrderAsync(int userId,CreateOrderDto dto)
+        public async Task<string> PlaceOrderAsync(int userId,CreateOrderDto dto)
         {
+            var Random=new Random();
+            string friendlyId = $"Eleve - {DateTime.UtcNow:yyMMdd} - {Random.Next(1000, 9999)}";
             var order = new Order
             {
-                Id = Guid.NewGuid(),  //for generating orderId
+                Id = Guid.NewGuid(),
+                OrderReference = friendlyId,  //for generating to the DB
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
                 Status = OrderStatus.Pending,
+                PaymentMethod= dto.PaymentMethod,
 
                 //Map the address Dto to domain Value object
                 ShippingAddress = new Address
                 (
+                    dto.ShippingAddress.Name,
                     dto.ShippingAddress.Street,
                     dto.ShippingAddress.City,
                     dto.ShippingAddress.State,
-                    dto.ShippingAddress.ZipCode
+                    dto.ShippingAddress.ZipCode,
+                    dto.ShippingAddress.PhoneNumber
                 )
             };
 
@@ -88,24 +94,9 @@ namespace Eleve_Backend.Infrastructure.Services
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            return order.Id;
+            return order.OrderReference;
         }
 
-        //public async Task<bool> ShipOrderAsync(Guid orderId)
-        //{
-        //    var order= await _context.Orders.FindAsync(orderId);
-
-        //    if(order==null)
-        //        return false;
-
-        //    if (order.Status == OrderStatus.Cancelled)
-        //        throw new Exception("Cannot ship a cancelled order.");
-
-        //    order.Status = OrderStatus.Shipped;
-
-        //    await _context.SaveChangesAsync();
-        //    return true;
-        //}
 
         public async Task<bool> UpdateOrderStatusAsync(Guid orderId,OrderStatus newStatus)
         {

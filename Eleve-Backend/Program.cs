@@ -33,6 +33,7 @@ namespace Eleve_Backend
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             //configuring jwt authentication
             // This tells the app: "If someone sends a token, here is how you check if it's valid"

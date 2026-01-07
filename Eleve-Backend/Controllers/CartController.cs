@@ -29,7 +29,7 @@ namespace Eleve_Backend.Controllers
             return int.Parse(idClaim.Value);
         }
         //getting all products
-        [HttpGet("Get all Products")]
+        [HttpGet("Cart-Products")]
         public IActionResult GetCartItems()
         {
             var userId=GetUserId();
@@ -38,8 +38,8 @@ namespace Eleve_Backend.Controllers
         }
 
         //adding items to cart
-        [HttpPost("Add To Cart")]
-        public IActionResult AddToCart([FromForm] AddToCartDto request)
+        [HttpPost("Add-To-Cart")]
+        public IActionResult AddToCart([FromBody] AddToCartDto request)
         {
             try
             {
@@ -62,16 +62,28 @@ namespace Eleve_Backend.Controllers
         }
 
         //updating cart(quantity)
-        [HttpPut("Product Quantity")]
-        public IActionResult UpdateQuantity(int itemId, [FromBody] UpdateCartDto request)
+        [HttpPut("Product-Quantity")]
+        public IActionResult UpdateQuantity( int itemId , [FromBody] UpdateCartDto request)
         {
-            var userId = GetUserId();
-            _cartService.UpdateQuantity(userId, itemId, request.NewQuantity);
-            return Ok("Cart quantity updated");
+            try
+            {
+
+                var userId = GetUserId();
+                _cartService.UpdateQuantity(userId, itemId, request.NewQuantity);
+                return Ok("Cart quantity updated");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Internal server error" });
+            }
         }
 
         //removing from cart
-        [HttpDelete("Remove from Cart")]
+        [HttpDelete("Remove-from-Cart")]
         public IActionResult RemoveFromCart(int itemId)
         {
             try
@@ -87,7 +99,7 @@ namespace Eleve_Backend.Controllers
         }
 
         //clearing cart
-        [HttpDelete("Clear Cart")]
+        [HttpDelete("Clear-Cart")]
         public IActionResult ClearCart()
         {
             var userId = GetUserId();

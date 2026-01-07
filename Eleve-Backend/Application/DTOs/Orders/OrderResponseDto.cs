@@ -7,9 +7,11 @@ namespace Eleve_Backend.Application.DTOs.Orders
     public class OrderResponseDto 
     {
         public Guid Id { get; set;}
+        public string OrderReference { get; set;}
         public DateTime OrderDate { get; set;}
         public decimal TotalAmount { get; set;}
         public string Status {  get; set;} //returning status as string to frontend
+        public string PaymentMethod { get; set;}
         public AddressDto ShippingAddress { get; set;}
         public List<OrderItemResponseDto> Items { get; set;}
     }

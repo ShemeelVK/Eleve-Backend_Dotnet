@@ -6,7 +6,7 @@ namespace Eleve_Backend.Application.Interfaces
 {
     public interface IOrderService
     {
-        Task<Guid> PlaceOrderAsync(int userId, CreateOrderDto dto);
+        Task<string> PlaceOrderAsync(int userId, CreateOrderDto dto);
         //Task<bool> ShipOrderAsync(Guid orderId);
 
         Task<bool> UpdateOrderStatusAsync(Guid orderId, OrderStatus newStatus);

@@ -25,7 +25,7 @@ namespace Eleve_Backend.Controllers
             return idClaim != null ? int.Parse(idClaim.Value) : 0;
         }
 
-        [HttpGet("Get All Products")]
+        [HttpGet("All-Products")]
         public IActionResult GetMyWishlist()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
@@ -39,7 +39,7 @@ namespace Eleve_Backend.Controllers
             return Ok(wishlist);
         }
 
-        [HttpPost("Toogle Wishlist")]
+        [HttpPost("Toggle-Wishlist")]
         public IActionResult Toggle(int productId)
         {
             var userId=GetUserId();
@@ -48,7 +48,7 @@ namespace Eleve_Backend.Controllers
             return Ok(new { message = result });
         }
 
-        [HttpDelete("Clear Wishlist")]
+        [HttpDelete("Clear-Wishlist")]
         public IActionResult Clear()
         {
             var userId= GetUserId();
