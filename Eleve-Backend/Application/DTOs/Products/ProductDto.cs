@@ -10,5 +10,6 @@
         public int Stock { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
         public bool IsFeatured { get; set; } = false;
+        public bool IsDeleted { get; set; }
     }
 }

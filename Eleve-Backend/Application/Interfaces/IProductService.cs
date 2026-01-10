@@ -5,7 +5,7 @@ namespace Eleve_Backend.Application.Interfaces
 {
     public interface IProductService
     {
-        List<ProductDto> GetAllProducts();
+        List<ProductDto> GetAllProducts(string? sortOrder = null);
         Product? GetProductById(int id);
 
         List<ProductDto> GetFeaturedProduct();
@@ -13,6 +13,7 @@ namespace Eleve_Backend.Application.Interfaces
 
         void UpdateProduct(int id, Product product);
         void DeleteProduct(int id);
-        List<ProductDto> GetProductsByCategory(string category);
+        List<ProductDto> GetProductsByCategory(string category, string? sortOrder = null);
+        Task<List<ProductDto>> SearchProductsAsync(string query, string? sortOrder = null, bool includeDeleted=false);
     }
 }

@@ -40,6 +40,17 @@ namespace Eleve_Backend.Infrastructure.Persistence
             modelBuilder.Entity<OrderItem>()
                 .Property(i=>i.UnitPrice)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<User>(user =>
+            {
+                // This tells EF: "These addresses belong strictly to this User"
+                user.OwnsMany(u => u.SavedAddresses, a =>
+                {
+                    a.WithOwner().HasForeignKey("UserId");
+                    a.Property<int>("Id"); // EF will generate a hidden ID for database handling
+                    a.HasKey("Id");
+                });
+            });
         }
     }
 }

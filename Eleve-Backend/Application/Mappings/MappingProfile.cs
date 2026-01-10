@@ -24,8 +24,9 @@ namespace Eleve_Backend.Application.Mappings
 
             CreateMap<Order, OrderResponseDto>()
                 //converting enum status to string
-                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.ShippingAddress.Name));
 
-            }
+        }
         }
 }

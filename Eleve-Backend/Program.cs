@@ -34,6 +34,8 @@ namespace Eleve_Backend
             builder.Services.AddScoped<IWishlistService, WishlistService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             //configuring jwt authentication
             // This tells the app: "If someone sends a token, here is how you check if it's valid"
@@ -52,6 +54,7 @@ namespace Eleve_Backend
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtIssuer,
                         ValidAudience = jwtAudience,
+                        ClockSkew=TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                     };
                 });
@@ -94,10 +97,10 @@ namespace Eleve_Backend
             {
                 options.AddPolicy("AllowReactApp",
                     builder => builder
-                    .AllowAnyOrigin()
+                    .WithOrigins("https://localhost:5173")
                     .AllowAnyMethod()
-                    .AllowAnyHeader());
-                    //.AllowCredentials());
+                    .AllowAnyHeader()
+                    .AllowCredentials());
             });
 
             var app = builder.Build();

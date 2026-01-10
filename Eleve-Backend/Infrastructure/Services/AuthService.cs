@@ -24,6 +24,38 @@ namespace Eleve_Backend.Infrastructure.Services
             _configuration= configuration;
         }
 
+        public async Task<string?> GeneratePasswordResetOtp(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return null;
+
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            user.ResetOtp = otp;
+            user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(1);
+
+            await _context.SaveChangesAsync();
+            return otp;
+        }
+
+        public async Task<bool> ResetPasswordWithOtp(string email,string otp,string newPassword)
+        {
+            var user=await _context.Users.FirstOrDefaultAsync(s => s.Email == email);
+
+            if(user == null || user.ResetOtp != otp || user.OtpExpiryTime < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.ResetOtp = null;
+            user.OtpExpiryTime = null;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<string> Register(RegisterRequestDto request)
         {
             //checking if email exists
@@ -71,7 +103,7 @@ namespace Eleve_Backend.Infrastructure.Services
             var refreshToken = GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
             return new LoginResponseDto
@@ -85,6 +117,31 @@ namespace Eleve_Backend.Infrastructure.Services
                     Email = user.Email,
                     Role = user.Role
                 }
+            };
+        }
+
+        public async Task<LoginResponseDto> RefreshToken(string oldRefreshToken)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == oldRefreshToken);
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                throw new Exception("Invalid or expired refresh token");
+            }
+
+            var newAccessToken = GenerateJwtToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return new LoginResponseDto
+            {
+                Token = newAccessToken,
+                RefreshToken = newRefreshToken,
+
+                User = new UserDto { Id = user.Id, Name = user.Username, Email = user.Email, Role = user.Role }
             };
         }
 
@@ -106,7 +163,7 @@ namespace Eleve_Backend.Infrastructure.Services
 
                 Issuer = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"],
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddSeconds(30),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

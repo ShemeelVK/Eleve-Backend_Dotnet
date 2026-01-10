@@ -40,6 +40,7 @@ namespace Eleve_Backend.Infrastructure.Services
                 OrderDate = DateTime.UtcNow,
                 Status = OrderStatus.Pending,
                 PaymentMethod= dto.PaymentMethod,
+                TransactionId=dto.TransactionId,
 
                 //Map the address Dto to domain Value object
                 ShippingAddress = new Address
@@ -105,16 +106,38 @@ namespace Eleve_Backend.Infrastructure.Services
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
-            {
                 return false;
+            
+            if(order.Status==OrderStatus.Cancelled || order.Status==OrderStatus.Delivered)
+                return false;
+
+            bool isValidTransition = false;
+
+            switch (order.Status)
+            {
+                case OrderStatus.Pending:
+                    if (newStatus == OrderStatus.Shipped || newStatus == OrderStatus.Cancelled)
+                        isValidTransition = true;
+                    break;
+
+                case OrderStatus.Shipped:
+                    if(newStatus==OrderStatus.Delivered)
+                        isValidTransition = true;
+                    break;
             }
 
-            if(order.Status!=OrderStatus.Cancelled && newStatus == OrderStatus.Cancelled)
+            if (!isValidTransition)
             {
-                foreach(var item in order.Items)
+                throw new InvalidOperationException($"Cannot change status from {order.Status} to {newStatus}.");
+            }
+                
+
+            if(newStatus == OrderStatus.Cancelled)
+            {
+                foreach (var item in order.Items)
                 {
                     var product = await _context.Products.FindAsync(item.ProductId);
-                    if (product!=null)
+                    if(product != null)
                     {
                         product.Stock += item.Quantity;
                     }

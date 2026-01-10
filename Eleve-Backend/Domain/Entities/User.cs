@@ -1,4 +1,6 @@
-﻿namespace Eleve_Backend.Domain.Entities
+﻿using Eleve_Backend.Domain.ValueObjects;
+
+namespace Eleve_Backend.Domain.Entities
 {
     public class User : BaseEntity
     {
@@ -9,7 +11,10 @@
         public string Role { get; set; } = "Customer";
         public bool IsActive { get; set; } = true;
         public string? RefreshToken { get; set; }
+        public string? ResetOtp {  get; set; }
+        public DateTime? OtpExpiryTime { get; set; }
         public DateTime RefreshTokenExpiryTime { get; set; }
+        public List<Address> SavedAddresses { get; set; } = new List<Address>();
 
 
     }

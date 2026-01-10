@@ -8,6 +8,7 @@ namespace Eleve_Backend.Application.DTOs.Orders
         public AddressDto ShippingAddress { get; set; }
 
         public string PaymentMethod { get; set; }
+        public string? TransactionId { get; set; }
     }
     public class OrderItemDto
     {

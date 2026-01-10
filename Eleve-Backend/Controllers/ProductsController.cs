@@ -2,8 +2,10 @@
 using Eleve_Backend.Application.DTOs.Products;
 using Eleve_Backend.Application.Interfaces;
 using Eleve_Backend.Domain.Entities;
+using Eleve_Backend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eleve_Backend.Controllers
 {
@@ -11,22 +13,23 @@ namespace Eleve_Backend.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-
+        private readonly EleveDbContext _context;
         private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
-        public ProductsController(IProductService productService,IMapper mapper)
+        public ProductsController(IProductService productService,IMapper mapper, EleveDbContext context)
         {
             _productService = productService;
             _mapper = mapper;
+            _context = context;
         }
 
 
         //[Authorize(Roles ="User")]
         [HttpGet("Get-All-Product")]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] string? sortOrder = null)
         {
-            return Ok(_productService.GetAllProducts());
+            return Ok(_productService.GetAllProducts(sortOrder));
         }
 
         [HttpGet("Featured-Products")]
@@ -36,6 +39,29 @@ namespace Eleve_Backend.Controllers
             return Ok(products);
         }
 
+        [Authorize]
+        [HttpGet("Admin-Products")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsAdmin()
+        {
+            var products = await _context.Products
+         .Select(p => new ProductDto
+         {
+             Id = p.Id,
+             Name = p.Name,
+             Price = p.Price,
+             Description = p.Description,
+             Category = p.Category ?? "Uncategorized",
+             Stock = p.Stock,
+             ImageUrl = p.ImageUrl,
+             IsFeatured = p.IsFeatured,
+             IsDeleted = p.IsDeleted
+         })
+         .ToListAsync();
+
+         
+         return Ok(products);
+        }
+        
         [HttpGet("Product-By-Id")]
         public IActionResult GetById(int id)
         {
@@ -46,7 +72,7 @@ namespace Eleve_Backend.Controllers
         }
 
         [HttpGet("Product-By-Category")]
-        public IActionResult GetByCategory(string category)
+        public IActionResult GetByCategory([FromQuery] string category, [FromQuery] string? sortOrder = null)
         {
             var products=_productService.GetProductsByCategory(category);
             return Ok(products);
@@ -79,8 +105,8 @@ namespace Eleve_Backend.Controllers
         }
 
         [Authorize]
-        [HttpPut("Update-Product")]
-        public IActionResult Update(int id, [FromForm] CreateProductDto request)
+        [HttpPut("Update-Product/{id}")]
+        public IActionResult Update(int id, [FromBody] CreateProductDto request)
         {
             //using automapper to convert DTO -> Entity
             var productEntity = _mapper.Map<Product>(request);
@@ -98,8 +124,8 @@ namespace Eleve_Backend.Controllers
             return Ok("Product updated successfully");
         }
 
-        [Authorize]
-        [HttpDelete("Delete-Product")]
+        [Authorize(Roles ="Admin")]
+        [HttpDelete("Delete-Product/{id}")]
         public IActionResult Delete(int id)
         {
             var existing=_productService.GetProductById(id);
@@ -110,5 +136,22 @@ namespace Eleve_Backend.Controllers
             _productService.DeleteProduct(id);
             return Ok("Product Deleted");
         }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search([FromQuery] string query)
+        {
+            var products = await _productService.SearchProductsAsync(query);
+            return Ok(products);
+        }
+
+        [Authorize(Roles ="Admin")]
+        [HttpGet("Admin-Search")]
+        public async Task<IActionResult> AdminSearch([FromQuery] string query, [FromQuery] string? sortOrder = null)
+        {
+            var products = await _productService.SearchProductsAsync(query,sortOrder);
+            return Ok(products);
+        }
+
+
     }
 }

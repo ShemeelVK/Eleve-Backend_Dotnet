@@ -22,7 +22,7 @@ namespace Eleve_Backend.Application.DTOs.Orders
         public string ZipCode { get; set; }
         [Required]
         [Phone(ErrorMessage ="Invalid Phone Number Format")]
-        [StringLength(10,ErrorMessage ="Phone Number must be 10 numbers")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone Number must be exactly 10 digits")]
         public string PhoneNumber { get; set; }
     }
 }

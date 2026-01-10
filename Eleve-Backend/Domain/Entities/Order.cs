@@ -13,6 +13,7 @@ namespace Eleve_Backend.Domain.Entities
         public string PaymentMethod { get; set; }
         public OrderStatus Status { get; set; }
         public Address ShippingAddress { get; set; }
+        public string? TransactionId { get; set; }
         public List<OrderItem> Items { get; set; } = new List<OrderItem>();
     }
 }

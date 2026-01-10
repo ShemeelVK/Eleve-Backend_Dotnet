@@ -36,16 +36,23 @@ namespace Eleve_Backend.Controllers
             return Ok(new { Order = orderReference, Message = "Order placed Successfully" });
         }
 
-        [HttpPut("{id}/Order-Status")]
+        [HttpPut("Order-Status/{id}")]
         [Authorize(Roles ="Admin")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusDto dto)
         {
-            var success = await _orderService.UpdateOrderStatusAsync(id, dto.Status);
+            try
+            {
 
-            if (!success)
-                return NotFound("Order not Found");
+                var success = await _orderService.UpdateOrderStatusAsync(id, dto.Status);
+                if (!success)
+                    return NotFound();
 
-            return Ok(new { Message = $"Order status updated to {dto.Status}" });
+                return Ok(new { Message = $"Order status updated to {dto.Status}" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("my-order")]
@@ -85,7 +92,7 @@ namespace Eleve_Backend.Controllers
 
         }
 
-        [HttpGet("admin/all-orders")]
+        [HttpGet("admin/All-Orders")]
         [Authorize(Roles ="Admin")]
         public async Task<IActionResult> GetAllOrders()
         {

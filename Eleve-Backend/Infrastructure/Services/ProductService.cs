@@ -15,28 +15,46 @@ namespace Eleve_Backend.Infrastructure.Services
             _context = context;
         }
 
-        public List<ProductDto> GetAllProducts()
+        //Helper method
+        private IQueryable<Product> ApplySorting(IQueryable<Product> query, string? sortOrder)
         {
-            return _context.Products
-                .Where(p=> !p.IsDeleted)
-                .Select(p => new ProductDto
-                {
-                    Id=p.Id,
-                    Name=p.Name,
-                    Description=p.Description,
-                    Price=p.Price,
-                    Category=p.Category,
-                    ImageUrl=p.ImageUrl,
-                    IsFeatured=p.IsFeatured,
-                    Stock=p.Stock
-                })
-                .ToList();
+            if(string.IsNullOrEmpty(sortOrder))
+                return query;
+
+            switch (sortOrder.ToLower())
+            {
+                case "lowtohigh":
+                    return query.OrderBy(p => p.Price);
+                case "hightolow":
+                    return query.OrderByDescending(p => p.Price);
+
+                default:
+                    return query;
+            }
+        }
+
+        public List<ProductDto> GetAllProducts(string? sortOrder = null)
+        {
+            var query = _context.Products.Where(p => !p.IsDeleted);
+            query=ApplySorting(query, sortOrder);
+
+            return query.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                Category = p.Category,
+                ImageUrl = p.ImageUrl,
+                IsFeatured = p.IsFeatured,
+                Stock = p.Stock
+            }).ToList();
         }
 
         public List<ProductDto> GetFeaturedProduct()
         {
             return _context.Products
-                .Where(p => p.IsFeatured == true)
+                .Where(p => p.IsFeatured == true && !p.IsDeleted)
                 .Select(s=>new ProductDto
                 {
                     Id=s.Id,
@@ -98,25 +116,61 @@ namespace Eleve_Backend.Infrastructure.Services
             }
         }
 
-        public List<ProductDto> GetProductsByCategory(string category)
+        public List<ProductDto> GetProductsByCategory(string category,string? sortOrder=null)
         {
-            var products= _context.Products
+            var query = _context.Products
                 .Where(p => p.Category.ToLower() == category.ToLower())
-                .Where(p=> !p.IsDeleted)
-                .Select(p => new ProductDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    Category = p.Category,
-                    Description = p.Description,
-                    ImageUrl = p.ImageUrl,
-                    IsFeatured = p.IsFeatured,
-                    Stock=p.Stock
-                })
-                .ToList();
+                .Where(p => !p.IsDeleted);
 
-            return products;
+            query = ApplySorting(query, sortOrder);
+
+            return query.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Category = p.Category,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                IsFeatured = p.IsFeatured,
+                Stock = p.Stock
+            }).ToList();
+
+        }
+
+        public async Task<List<ProductDto>> SearchProductsAsync(string query, string? sortOrder = null, bool includeDeleted = false)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<ProductDto>();
+
+            var lowerQuery = query.ToLower();
+
+            var dbQuery=_context.Products.AsQueryable();
+
+            if (!includeDeleted)
+            {
+                dbQuery = dbQuery.Where(p => !p.IsDeleted);
+            }
+
+            dbQuery = dbQuery
+                .Where(p => p.Name.ToLower().Contains(lowerQuery) ||
+                  p.Description.ToLower().Contains(lowerQuery));
+
+            dbQuery=ApplySorting(dbQuery, sortOrder);
+
+            return await dbQuery.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Category = p.Category,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                IsFeatured = p.IsFeatured,
+                Stock = p.Stock,
+                IsDeleted = p.IsDeleted
+            }).ToListAsync();
+
         }
     }
 }

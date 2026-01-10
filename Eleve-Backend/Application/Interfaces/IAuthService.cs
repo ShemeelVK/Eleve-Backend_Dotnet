@@ -8,6 +8,9 @@ namespace Eleve_Backend.Application.Interfaces
     {
         //this returns a string (the token) if successful,oir null if failed
         Task<LoginResponseDto> Login(LoginRequestDto request);
+        Task<LoginResponseDto> RefreshToken(string oldRefreshToken);
         Task<String> Register(RegisterRequestDto request);
+        Task<string?> GeneratePasswordResetOtp(string email);
+        Task<bool> ResetPasswordWithOtp(string email, string otp, string newPassword);
     }
 }
