@@ -10,7 +10,7 @@ namespace Eleve_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Customer")]
     public class CartController : Controller
     {
         private readonly ICartService _cartService;

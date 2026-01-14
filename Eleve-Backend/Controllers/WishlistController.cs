@@ -10,6 +10,7 @@ namespace Eleve_Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles ="Customer")]
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService _wishlistService;
@@ -22,13 +23,15 @@ namespace Eleve_Backend.Controllers
         private int GetUserId()
         {
             var idClaim=User.FindFirst(ClaimTypes.NameIdentifier);
-            return idClaim != null ? int.Parse(idClaim.Value) : 0;
+            if (idClaim == null)
+                return 0;
+            return int.Parse(idClaim.Value);
         }
 
         [HttpGet("All-Products")]
         public IActionResult GetMyWishlist()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userId = GetUserId();
             var wishlist=_wishlistService.GetMyWishlist(userId);
 
             if(wishlist==null || wishlist.Count == 0)

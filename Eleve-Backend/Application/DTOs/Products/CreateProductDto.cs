@@ -19,9 +19,7 @@ namespace Eleve_Backend.Application.DTOs.Products
         public decimal Price { get; set; }
         
 
-        [Required]
-        [Url(ErrorMessage ="Invalid Image URL")]
-        public string ImageUrl { get; set; } = string.Empty;
+        public IFormFile? ImageFile { get; set; }
 
         [Required]
         [Range(1, 100000, ErrorMessage = "Stock must be at least 1")]

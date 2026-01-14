@@ -1,11 +1,13 @@
 using AutoMapper;
 using Eleve_Backend.Application.Interfaces;
+using Eleve_Backend.Infrastructure.Helpers;
 using Eleve_Backend.Infrastructure.Persistence;
 using Eleve_Backend.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 using System.Text;
 
 namespace Eleve_Backend
@@ -15,6 +17,8 @@ namespace Eleve_Backend
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
             // Add services to the container.
 
@@ -36,6 +40,8 @@ namespace Eleve_Backend
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IPdfService, PdfService>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
 
             //configuring jwt authentication
             // This tells the app: "If someone sends a token, here is how you check if it's valid"
@@ -103,6 +109,9 @@ namespace Eleve_Backend
                     .AllowCredentials());
             });
 
+            //Invoice 
+            QuestPDF.Settings.License = LicenseType.Community;
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -118,6 +127,9 @@ namespace Eleve_Backend
             app.UseCors("AllowReactApp");
 
             app.UseAuthentication();
+
+            app.UseMiddleware<Eleve_Backend.Infrastructure.Middleware.UserStatusMiddleware>();
+
             app.UseAuthorization();
 
             //global exception handler

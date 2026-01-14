@@ -40,7 +40,7 @@ namespace Eleve_Backend.Controllers
                 <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4f46e5;'>{otp}</span>
             </div>
             
-            <p style='font-size: 13px; color: #666;'>This code is valid for <b>10 minutes</b>. If you did not request this, please ignore this email or contact our support team.</p>
+            <p style='font-size: 13px; color: #666;'>This code is valid for <b>2 minutes</b>. If you did not request this, please ignore this email or contact our support team.</p>
             
             <hr style='border: 0; border-top: 1px solid #eee; margin: 30px 0;'>
             

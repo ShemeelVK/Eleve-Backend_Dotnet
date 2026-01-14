@@ -212,8 +212,32 @@ namespace Eleve_Backend.Infrastructure.Services
             {
                 return false;
             }
+        }
 
+        public async Task<bool> ReturnOrderAsync(Guid orderId, int userId)
+        {
+            var order= await _context.Orders
+                .Include(o=> o.Items)
+                .FirstOrDefaultAsync(o=> o.Id==orderId);
 
+            if(order==null || order.UserId!=userId || order.Status != OrderStatus.Delivered)
+            {
+                return false;
+            }
+
+            foreach(var item in order.Items)
+            {
+                var product = await _context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Stock += item.Quantity;
+                }
+            }
+
+            order.Status = OrderStatus.Returned;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         ////Helper method to map the code

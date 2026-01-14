@@ -41,13 +41,12 @@ namespace Eleve_Backend.Infrastructure.Services
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
                 
-                return true; // Success
+                return true; 
             }
             catch (Exception ex)
             {
-                // Log the error (You can inject ILogger if you have it)
                 Console.WriteLine($"Email failed: {ex.Message}");
-                return false; // Failed
+                return false; 
             }
         }
     }

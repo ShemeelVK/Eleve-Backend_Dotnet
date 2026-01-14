@@ -82,11 +82,9 @@ namespace Eleve_Backend.Infrastructure.Services
             {
                 throw new InvalidOperationException($"A product with {product.Name} already exists");
             }
-
-            // Adding the product to the DbContext
+      
             _context.Products.Add(product);
 
-            //saving changes in the sql
             _context.SaveChanges();
 
             return product;

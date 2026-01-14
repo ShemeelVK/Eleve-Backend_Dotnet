@@ -163,7 +163,7 @@ namespace Eleve_Backend.Infrastructure.Services
 
                 Issuer = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"],
-                Expires = DateTime.UtcNow.AddSeconds(30),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

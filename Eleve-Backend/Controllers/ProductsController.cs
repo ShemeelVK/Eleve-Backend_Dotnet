@@ -3,6 +3,7 @@ using Eleve_Backend.Application.DTOs.Products;
 using Eleve_Backend.Application.Interfaces;
 using Eleve_Backend.Domain.Entities;
 using Eleve_Backend.Infrastructure.Persistence;
+using Eleve_Backend.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,16 +17,18 @@ namespace Eleve_Backend.Controllers
         private readonly EleveDbContext _context;
         private readonly IProductService _productService;
         private readonly IMapper _mapper;
+        private readonly IPhotoService _photoService;
 
-        public ProductsController(IProductService productService,IMapper mapper, EleveDbContext context)
+        public ProductsController(IProductService productService,IMapper mapper, EleveDbContext context, IPhotoService photoService)
         {
             _productService = productService;
             _mapper = mapper;
             _context = context;
+            _photoService = photoService;
         }
 
 
-        //[Authorize(Roles ="User")]
+        //[Authorize(Roles ="Customer")]
         [HttpGet("Get-All-Product")]
         public IActionResult GetAll([FromQuery] string? sortOrder = null)
         {
@@ -39,7 +42,7 @@ namespace Eleve_Backend.Controllers
             return Ok(products);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet("Admin-Products")]
         public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsAdmin()
         {
@@ -80,48 +83,84 @@ namespace Eleve_Backend.Controllers
 
         [Authorize]
         [HttpPost("Add-Product")]
-        public IActionResult Create([FromBody] CreateProductDto request)
+        public async Task<IActionResult> Create([FromForm] CreateProductDto request)
         {
             try
             {
+                
+                if (request.ImageFile == null || request.ImageFile.Length == 0)
+                {
+                    return BadRequest(new { message = "Product image is required." });
+                }
+
+                var photoResult = await _photoService.AddPhotoAsync(request.ImageFile);
+
+                if (photoResult.Error != null)
+                {
+                    return BadRequest(new { message = photoResult.Error.Message });
+                }
+
+                // 2. Map DTO to Entity
                 var productEntity = _mapper.Map<Product>(request);
 
+                // 3. Inject the Cloudinary URL into the entity manually
+                productEntity.ImageUrl = photoResult.SecureUrl.AbsoluteUri;
+
+                // 4. Call your existing Service (No changes needed in Service!)
                 var createdProduct = _productService.AddProduct(productEntity);
+
                 return Ok(createdProduct);
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
-                //logic for already exists
-                return Conflict(new { message = ex.Message   });
+                return Conflict(new { message = ex.Message });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return BadRequest(new {error= ex.Message });
+                return BadRequest(new { error = ex.Message });
             }
-            //product.Id = 0; //for generating a new id for sql with the identity
-
-
+            
 
         }
 
         [Authorize]
         [HttpPut("Update-Product/{id}")]
-        public IActionResult Update(int id, [FromBody] CreateProductDto request)
+        public async Task<IActionResult> Update(int id, [FromForm] CreateProductDto request)
         {
-            //using automapper to convert DTO -> Entity
-            var productEntity = _mapper.Map<Product>(request);
+          
+            try
+            {
+                
+                var existingProduct = _productService.GetProductById(id);
+                if (existingProduct == null) return NotFound("Product not found");
 
-            //ensuring the id is correct before saving
-            productEntity.Id = id;
+             
+                if (request.ImageFile != null && request.ImageFile.Length > 0)
+                {
+                    var photoResult = await _photoService.AddPhotoAsync(request.ImageFile);
+                    if (photoResult.Error != null) return BadRequest(new { message = photoResult.Error.Message });
 
-            //service
-            var existing = _productService.GetProductById(id);
-            if (existing == null)
-                return NotFound("Product not found");
+                    
+                    existingProduct.ImageUrl = photoResult.SecureUrl.AbsoluteUri;
+                }
 
-            _productService.UpdateProduct(id, productEntity);
+     
+                existingProduct.Name = request.Name;
+                existingProduct.Description = request.Description;
+                existingProduct.Price = request.Price;
+                existingProduct.Category = request.Category;
+                existingProduct.Stock = request.Stock;
+                existingProduct.IsFeatured = request.IsFeatured;
 
-            return Ok("Product updated successfully");
+                
+                _productService.UpdateProduct(id, existingProduct);
+
+                return Ok(new { message = "Product updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [Authorize(Roles ="Admin")]

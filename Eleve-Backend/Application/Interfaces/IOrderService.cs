@@ -19,5 +19,6 @@ namespace Eleve_Backend.Application.Interfaces
         Task<bool> CancelOrderAsync (Guid orderId,int userId);
 
         bool VerifyPayment(PaymentVerificationDto dto);
+        Task<bool> ReturnOrderAsync(Guid orderId, int userId);
     }
 }

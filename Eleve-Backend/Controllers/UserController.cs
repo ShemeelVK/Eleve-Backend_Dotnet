@@ -90,7 +90,7 @@ namespace Eleve_Backend.Controllers
 
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet("Search-Users")]
         public async Task<ActionResult<IEnumerable<UserSearchDto>>> GetAllUsersAsync([FromQuery] string? search)
         {
@@ -98,7 +98,7 @@ namespace Eleve_Backend.Controllers
             return Ok(users);
         }
 
-        [Authorize]
+        [Authorize (Roles ="Admin")]
         [HttpPut("Toggle-Status/{id}")]
         public async Task<IActionResult> ToggleUserStatus(int id)
         {
