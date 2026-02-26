@@ -105,7 +105,7 @@ namespace Eleve_Backend
             {
                 options.AddPolicy("AllowReactApp",
                     builder => builder
-                    .WithOrigins("http://localhost:5173"
+                    .WithOrigins("http://localhost:5173","https://eleve-store.vercel.app"
                   )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
