@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Diagnostics;
 using System.Text;
 
 namespace Eleve_Backend
