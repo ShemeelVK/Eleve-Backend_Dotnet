@@ -103,7 +103,8 @@ namespace Eleve_Backend
             {
                 options.AddPolicy("AllowReactApp",
                     builder => builder
-                    .WithOrigins("https://localhost:5173")
+                    .WithOrigins("http://localhost:5173"
+                  )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
@@ -114,25 +115,6 @@ namespace Eleve_Backend
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-
-            app.UseHttpsRedirection();
-
-            app.UseCors("AllowReactApp");
-
-            app.UseAuthentication();
-
-            app.UseMiddleware<Eleve_Backend.Infrastructure.Middleware.UserStatusMiddleware>();
-
-            app.UseAuthorization();
-
-            //global exception handler
             app.UseExceptionHandler(errorApp =>
             {
                 errorApp.Run(async context =>
@@ -142,6 +124,26 @@ namespace Eleve_Backend
                     await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred. Please try again later.\"}");
                 });
             });
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+
+            //app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseCors("AllowReactApp");
+
+            app.UseAuthentication();
+
+            app.UseMiddleware<Eleve_Backend.Infrastructure.Middleware.UserStatusMiddleware>();
+
+            app.UseAuthorization();
 
             app.MapControllers();
 
