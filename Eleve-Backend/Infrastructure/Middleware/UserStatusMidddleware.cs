@@ -31,13 +31,15 @@ namespace Eleve_Backend.Infrastructure.Middleware
                         
                         var user = await dbContext.Users
                             .AsNoTracking()
+                            .Where(u => u.Id == userId)
                             .Select(u => new { u.Id, u.IsActive }) 
-                            .FirstOrDefaultAsync(u => u.Id == userId);
+                            .FirstOrDefaultAsync();
 
                         
                         if (user != null && !user.IsActive)
                         {
                             context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            context.Response.ContentType = "application/json";
                             await context.Response.WriteAsJsonAsync(new { message = "Your account has been suspended. Please contact support." });
                             return; // Stop the pipeline here. Do not call _next
                         }

@@ -10,7 +10,7 @@ using Eleve_Backend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Razorpay.Api;
 using Razorpay.Api.Errors;
-using System.Linq;
+using AutoMapper.QueryableExtensions;
 using System.Linq;
 using System.Threading.Tasks;
 using Order = Eleve_Backend.Domain.Entities.Order;
@@ -152,16 +152,41 @@ namespace Eleve_Backend.Infrastructure.Services
 
         public async Task<List<OrderResponseDto>> GetOrdersByUserIdAsync(int userId)
         {
-            //fetching from Db
-            var orders = await _context.Orders
-                .Where(s => s.UserId == userId)
-                .Include(s => s.Items)
-                .ThenInclude(i=>i.Product)
-                .OrderByDescending(s => s.OrderDate) //newest first
-                .ToListAsync();
-            
-            //converting dto
-            return _mapper.Map<List<OrderResponseDto>>(orders);
+                 return await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => o.UserId == userId)
+                    .OrderByDescending(o => o.OrderDate)
+                    // .AsSplitQuery() tells EF to fetch items in a separate, simple SQL call
+                    // This prevents the complex nested JOIN that is taking 25 seconds.
+                    .AsSplitQuery() 
+                    .Select(o => new OrderResponseDto
+                    {
+                        Id = o.Id,
+                        OrderReference = o.OrderReference,
+                        OrderDate = o.OrderDate,
+                        TotalAmount = o.TotalAmount,
+                        Status = o.Status.ToString(),
+                        PaymentMethod = o.PaymentMethod,
+                        Username = o.ShippingAddress.Name,
+                        ShippingAddress = new AddressDto
+                        {
+                            Name = o.ShippingAddress.Name,
+                            Street = o.ShippingAddress.Street,
+                            City = o.ShippingAddress.City,
+                            State = o.ShippingAddress.State,
+                            ZipCode = o.ShippingAddress.ZipCode,
+                            PhoneNumber = o.ShippingAddress.PhoneNumber
+                        },
+                        Items = o.Items.Select(i => new OrderItemResponseDto
+                        {
+                            ProductId = i.ProductId,
+                            ProductName = i.ProductName,
+                            UnitPrice = i.UnitPrice,
+                            Quantity = i.Quantity,
+                            ProductImage = i.Product.ImageUrl
+                        }).ToList()
+                    })
+                        .ToListAsync();
         }
 
         public async Task<List<OrderResponseDto>> GetAllOrdersAsync()

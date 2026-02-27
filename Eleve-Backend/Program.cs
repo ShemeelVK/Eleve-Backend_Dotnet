@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Diagnostics;
 using System.Text;
 
 namespace Eleve_Backend
@@ -25,8 +27,10 @@ namespace Eleve_Backend
             builder.Services.AddControllers();
 
             //Database Configuration
-            builder.Services.AddDbContext<EleveDbContext> (options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<EleveDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             //automapper
             builder.Services.AddAutoMapper(typeof(Program));
