@@ -136,7 +136,6 @@ namespace Eleve_Backend
                 app.UseSwaggerUI();
             }
 
-
             //app.UseHttpsRedirection();
 
             app.UseRouting();
